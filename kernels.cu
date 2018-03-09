@@ -1307,25 +1307,22 @@ __global__ void fband_iso_direct(double* F_down_wk, double* F_up_wk, double* pla
 	int y = threadIdx.y + blockIdx.y * blockDim.y;
 
 	if (x < nbin && y < ny) {
-
 		for (int i = numinterfaces - 1; i >= 0; i--){
-
 			if (i == numinterfaces - 1) {
-				F_down_wk[y + ny * x + ny * nbin * i] =
-						ffactor * pow((Rstar / a),2.0) * pi * planckband_lay[i + x * (numinterfaces-1+2)];
+			  F_down_wk[y + ny * x + ny * nbin * i] =
+			      ffactor * pow((Rstar / a),2.0) * pi * planckband_lay[i + x * (numinterfaces-1+2)];
 			}
 			else {
-				double delta_tau = deltacolmass[i] * kopac_lay[y+ny*x + ny*nbin*i];
-				double trans = (1.0 - delta_tau) * exp(-delta_tau) + pow(delta_tau,2.0) * expint1(delta_tau);
+			  double delta_tau = deltacolmass[i] * kopac_lay[y+ny*x + ny*nbin*i];
+			  double trans = (1.0 - delta_tau) * exp(-delta_tau) + pow(delta_tau,2.0) * expint1(delta_tau);
 
-				F_down_wk[y+ny*x+ny*nbin*i] =
-						F_down_wk[y+ny*x+ny*nbin*(i+1)]*trans
-						+ pi*planckband_lay[i+x*(numinterfaces-1+2)] * (1.0 - trans);
+			  F_down_wk[y + ny*x + ny*nbin*i] =
+			    F_down_wk[y + ny*x + ny*nbin*(i+1)]*trans
+			    + pi*planckband_lay[i+x*(numinterfaces-1+2)] * (1.0 - trans);
 			}
 		}
 
 		for (int i = 0; i < numinterfaces; i++){
-
 			if (i == 0) {
 				if(singlewalk == 1){
 					// without scattering there is no downward flux contribution to the upward stream
@@ -1362,26 +1359,22 @@ __global__ void fband_noniso_direct(double* F_down_wk, double* F_up_wk, double* 
 	int y = threadIdx.y + blockIdx.y * blockDim.y;
 
 	if (x < nbin && y < ny) {
-
 		for (int i = numinterfaces - 1; i >= 0; i--){
-
 			if (i == numinterfaces - 1) {
-				F_down_wk[y + ny * x + ny * nbin * i] =
-						ffactor * pow((Rstar / a),2.0) * pi * planckband_lay[i + x * (numinterfaces-1+2)];
+			  F_down_wk[y + ny * x + ny * nbin * i] =
+			    ffactor * pow((Rstar / a),2.0) * pi * planckband_lay[i + x * (numinterfaces-1+2)];
 			}
 			else {
-
 				double kopac_up = (kopac_lay[y+ny*x + ny*nbin*i] + kopac_int[y+ny*x + ny*nbin*(i+1)])/2.0;
 				double delta_tau_up = deltacolupper[i] * kopac_up;
 				double trans_up = (1.0 - delta_tau_up) * exp(-delta_tau_up)
 								  + pow(delta_tau_up,2.0) * expint1(delta_tau_up);
-				double pgrad_upper = (planckband_lay[i + x * (numinterfaces-1+2)]
-				                     - planckband_int[(i + 1) + x * numinterfaces]) / delta_tau_up;
+				double pgrad_upper = (planckband_lay[i + x*(numinterfaces-1+2)]
+				                    - planckband_int[(i+1) + x*numinterfaces]) / delta_tau_up;
 
-				Fc_down_wk[y+ny*x+ny*nbin*i] =
-						F_down_wk[y+ny*x+ny*nbin*(i+1)]*trans_up
-						+ pi*planckband_int[(i+1)+x*numinterfaces]*(1.0-trans_up)
-						+ pi*pgrad_upper*(-2.0/3.0*(1.0-exp(-delta_tau_up)) + delta_tau_up*(1.0-1.0/3.0*trans_up));
+				Fc_down_wk [y+ny*x+ny*nbin*i] = F_down_wk[y+ny*x+ny*nbin*(i+1)]*trans_up
+				                              + pi*planckband_int[(i+1)+x*numinterfaces]*(1.0-trans_up)
+				     + pi*pgrad_upper*(-2.0/3.0*(1.0-exp(-delta_tau_up)) + delta_tau_up*(1.0-1.0/3.0*trans_up));
 
 				// to prevent instability from too small optical depths
 				if(delta_tau_up < 1e-4){
@@ -1413,18 +1406,17 @@ __global__ void fband_noniso_direct(double* F_down_wk, double* F_up_wk, double* 
 		}
 
 		for (int i = 0; i < numinterfaces; i++){
-
 			if (i == 0) {
 				if(singlewalk == 1){
 					// without scattering there is no downward flux contribution to the upward stream
-					F_up_wk[y + ny * x + ny * nbin * i] =
-							0 + pi * planckband_lay[numinterfaces + x * (numinterfaces-1+2)];
+					F_up_wk[y + ny*x + ny*nbin*i] =
+						0 + pi * planckband_lay[numinterfaces + x*(numinterfaces-1+2)];
 				}
 				else{
-					// usual expression
-					F_up_wk[y + ny * x + ny * nbin * i] =
-							F_down_wk[y + ny * x + ny * nbin * i]
-							+ pi * planckband_lay[numinterfaces + x * (numinterfaces-1+2)];
+					// usual expression  
+					F_up_wk[y + ny*x + ny*nbin*i] =
+						F_down_wk[y + ny*x + ny*nbin*i]
+						+   pi * planckband_lay[numinterfaces + x*(numinterfaces-1+2)];
 				}
 			}
 			else {
